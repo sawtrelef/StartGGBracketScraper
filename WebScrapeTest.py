@@ -1,6 +1,5 @@
-from types import NoneType
-
 import requests
+from xlsxExporter import exportToxlsx
 from bs4 import BeautifulSoup
 
 URL1 = "https://www.start.gg/tournament/arcade-time-knockout-smash-brothers-tournament-with-hungrybox-2/event/melee-singles/brackets/2177508/3167981"
@@ -86,23 +85,25 @@ def gatherData(URL):
 
         if winnername not in names:
             ## (Name:(sets played, sets won, games played, games won, dq's))
-            names[winnername] = 0, 0, 0, 0, 0
+            names[winnername] = {}
+            names[winnername][game] = 0,0,0,0,0
         if winnergames == 0:
-            names[winnername] = names[winnername][0], names[winnername][1], names[winnername][2], names[winnername][3], \
-            names[winnername][4]
+            names[winnername][game] = names[winnername][game][0], names[winnername][game][1], names[winnername][game][2], names[winnername][game][3], \
+            names[winnername][game][4]
         else:
-            names[winnername] = names[winnername][0] + 1, names[winnername][1] + 1, names[winnername][
-                2] + winnergames + losergames, names[winnername][3] + winnergames, names[winnername][4]
+            names[winnername][game] = names[winnername][game][0] + 1, names[winnername][game][1] + 1, names[winnername][game][
+                2] + winnergames + losergames, names[winnername][game][3] + winnergames, names[winnername][game][4]
 
         losergames = int(losergames)
         if losername not in names:
-            names[losername] = 0, 0, 0, 0, 0
+            names[losername] = {}
+            names[losername][game] = 0, 0, 0, 0, 0
         if winnergames == 0:
-            names[losername] = names[losername][0], names[losername][1], names[losername][2], names[losername][3], \
-            names[losername][4] + 1
+            names[losername][game] = names[losername][game][0], names[losername][game][1], names[losername][game][2], names[losername][game][3], \
+            names[losername][game][4] + 1
         else:
-            names[losername] = names[losername][0] + 1, names[losername][1], names[losername][
-                2] + winnergames + losergames, names[losername][3] + losergames, names[losername][4]
+            names[losername][game] = names[losername][game][0] + 1, names[losername][game][1], names[losername][game][
+                2] + winnergames + losergames, names[losername][game][3] + losergames, names[losername][game][4]
 
         # matchdata as (OpponentName, GamesIWon, GamesILost)
         if winnername == "Hungrybox":
@@ -120,6 +121,15 @@ def gatherData(URL):
 
     return names, players
 
+def fetchURLS(URL):
+    listofURL = []
+
+    page = requests.get(URL)
+    soup = BeautifulSoup(page.content, "html.parser")
+
+    return listofURL
+
+
 masternames = {}
 masterplayers = {}
 
@@ -132,10 +142,15 @@ for URL in URLLIST:
 
     if URLSPLITS[len(URLSPLITS)-1] != "brackets":
         urlnames, urlplayers = gatherData(URL)
+
+
         for name in urlnames:
             if name not in masternames:
-                masternames[name] = 0,0,0,0,0
-            masternames[name] = masternames[name][0] + urlnames[name][0],masternames[name][1]+urlnames[name][1],masternames[name][2]+urlnames[name][2],masternames[name][3]+urlnames[name][3],masternames[name][4]+urlnames[name][4]
+                masternames[name] = {}
+                masternames[name][game] = 0,0,0,0,0
+            if game not in masternames[name]:
+                masternames[name][game] = 0,0,0,0,0
+            masternames[name][game] = masternames[name][game][0] + urlnames[name][game][0],masternames[name][game][1]+urlnames[name][game][1],masternames[name][game][2]+urlnames[name][game][2],masternames[name][game][3]+urlnames[name][game][3],masternames[name][game][4]+urlnames[name][game][4]
 
         for player in urlplayers:
             if player not in masterplayers:
@@ -153,6 +168,8 @@ for URL in URLLIST:
                                                         masterplayers[player].opponents[game][opponent][4] + urlplayers[player].opponents[game][opponent][4], \
                                                         masterplayers[player].opponents[game][opponent][5] + urlplayers[player].opponents[game][opponent][5], \
                                                         masterplayers[player].opponents[game][opponent][6] + urlplayers[player].opponents[game][opponent][6]
+    else:
+        urllist = fetchURLS(URL)
 
     #for player in players:
         #print(player.text)
@@ -163,5 +180,8 @@ for URL in URLLIST:
             #names.append(str(name))
 
 
+
+
 print("goodbye")
+exportToxlsx(masternames, masterplayers)
 quit()
