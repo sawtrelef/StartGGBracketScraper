@@ -5,11 +5,10 @@ from bs4 import BeautifulSoup
 URL1 = "https://www.start.gg/tournament/arcade-time-knockout-smash-brothers-tournament-with-hungrybox-2/event/melee-singles/brackets/2177508/3167981"
 URL2 = "https://www.start.gg/tournament/arcade-time-knockout-smash-brothers-tournament-with-hungrybox-2/event/ultimate-singles/brackets/2175874/3165749"
 
-URL = URL2
+urlfile = open('urllist.txt')
 
-URLLIST = []
-URLLIST.append(URL1)
-URLLIST.append(URL2)
+urltext = urlfile.read()
+URLLIST = urltext.splitlines()
 
 class Player():
     def __init__(self):
@@ -66,6 +65,9 @@ def gatherData(URL):
         if loserdata == None:
             loserdata = match.find("div", class_="match-player entrant loser missing")
 
+        if loserdata == None:
+            loserdata = match.find("div", class_="match-player entrant loser dq")
+
         if loserdata:
             losername = loserdata.find("span", class_="match-player-name-container")
             losername = str(losername.contents[len(losername.contents) - 1])
@@ -106,15 +108,11 @@ def gatherData(URL):
                 2] + winnergames + losergames, names[losername][game][3] + losergames, names[losername][game][4]
 
         # matchdata as (OpponentName, GamesIWon, GamesILost)
-        if winnername == "Hungrybox":
-            print("beep")
 
         if winnername not in players:
             players[winnername] = Player()
         players[winnername].addOpponentData((losername, winnergames, losergames, game))
 
-        if losername == "Yho!":
-            print("teehee")
         if losername not in players:
             players[losername] = Player()
         players[losername].addOpponentData((winnername, losergames, winnergames, game))
@@ -134,9 +132,13 @@ masternames = {}
 masterplayers = {}
 tournamentlist= {}
 
+
+current = 1
+max = len(URLLIST)
+
 for URL in URLLIST:
 
-
+    print ("Processing "+str(current)+" out of "+ str(max))
     URLSPLITS = URL.split('/')
     gamesplit = URLSPLITS.index("brackets")
     game = URLSPLITS[gamesplit-1]
@@ -181,6 +183,7 @@ for URL in URLLIST:
                                                         masterplayers[player].opponents[game][opponent][6] + urlplayers[player].opponents[game][opponent][6]
     else:
         urllist = fetchURLS(URL)
+    current = current+1
 
     #for player in players:
         #print(player.text)
