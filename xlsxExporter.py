@@ -21,11 +21,14 @@ import xlsxwriter
 #
 #playerdictionary[name].opponents[game][opponent] = (SetsPlayed, SetsWon, Sets Lost, GamesPlayed, GamesWon, GamesLost, DQ)
 
-def exportToxlsx(namesdictionary, playersdictionary, filetitle='default'):
+def exportToxlsx(namesdictionary, playersdictionary, tournamentdictionary, filetitle='default'):
     workbook = xlsxwriter.Workbook(filetitle+'.xlsx')
     gamenameworksheets = {}
     gamesetdict = {}
     gamematchdict = {}
+    tournamentsheets= {}
+    playersheets = {}
+
 
     for name in namesdictionary:
         for game in namesdictionary[name]:
@@ -75,6 +78,64 @@ def exportToxlsx(namesdictionary, playersdictionary, filetitle='default'):
             gamenameworksheets[str(game + ' Match Records')].write(row, 4, gamematchdict[game][name][3])
 
             row = row + 1
+    tournamentcount = 1
+    tournamentnamelist = {}
+    for tournament in tournamentdictionary:
+        if tournament not in tournamentsheets:
+            tournamentsheets[tournament] = workbook.add_worksheet(str("Tournament " + str(tournamentcount)))
+            tournamentcount = tournamentcount +1
+            tournamentnamelist[tournament] = []
+        column = 0
+        for game in tournamentdictionary[tournament]:
+            tournamentsheets[tournament].write(0,column, str(game))
+            tournamentsheets[tournament].write(0,column+1, "Record")
+            row = 1
+            for name in tournamentdictionary[tournament][game]:
+                tournamentsheets[tournament].write(row,column, name)
+                tournamentsheets[tournament].write(row,column+1, str(tournamentdictionary[tournament][game][name]))
+                row = row+1
+                if name not in tournamentnamelist[tournament]:
+                    tournamentnamelist[tournament].append(name)
+
+            column = column+2
+
+        tournamentsheets[tournament].write(0,column, "Attendees List")
+        row = 1
+        for name in tournamentnamelist[tournament]:
+            tournamentsheets[tournament].write(row,column, name)
+            row = row+1
+
+    for player in playersdictionary:
+        opponentdict = {}
+        if player not in playersheets:
+            playersheets[player] = workbook.add_worksheet(player)
+
+        column = 0
+
+        for game in playersdictionary[player].opponents:
+            playersheets[player].write(1,column,game)
+            playersheets[player].write(1,column+1,"record")
+            row = 2
+            for opponent in playersdictionary[player].opponents[game]:
+                if opponent not in opponentdict:
+                    opponentdict[opponent] = 0,0,0,0,0,0,0
+                opponentdict[opponent] = playersdictionary[player].opponents[game][opponent][0] + opponentdict[opponent][0],playersdictionary[player].opponents[game][opponent][1] + opponentdict[opponent][1],playersdictionary[player].opponents[game][opponent][2] + opponentdict[opponent][2],playersdictionary[player].opponents[game][opponent][3] + opponentdict[opponent][3],playersdictionary[player].opponents[game][opponent][4] + opponentdict[opponent][4],playersdictionary[player].opponents[game][opponent][5] + opponentdict[opponent][5],playersdictionary[player].opponents[game][opponent][6] + opponentdict[opponent][6]
+                playersheets[player].write(row,column,opponent)
+                playersheets[player].write(row,column+1,str(playersdictionary[player].opponents[game][opponent]))
+                row = row+1
+            column = column+2
+        playersheets[player].write(0,column, "Opponent")
+        playersheets[player].write(0,column+1, "Overall Record")
+        row = 2
+        for opponent in opponentdict:
+            playersheets[player].write(row, column, opponent)
+            playersheets[player].write(row, column + 1, str(opponentdict[opponent]))
+            row = row+1
+
+
+    print("Done")
+
+
 
     workbook.close()
 

@@ -132,6 +132,7 @@ def fetchURLS(URL):
 
 masternames = {}
 masterplayers = {}
+tournamentlist= {}
 
 for URL in URLLIST:
 
@@ -139,10 +140,17 @@ for URL in URLLIST:
     URLSPLITS = URL.split('/')
     gamesplit = URLSPLITS.index("brackets")
     game = URLSPLITS[gamesplit-1]
+    tournamentname = URLSPLITS[URLSPLITS.index("event")-1]
+
+
 
     if URLSPLITS[len(URLSPLITS)-1] != "brackets":
         urlnames, urlplayers = gatherData(URL)
 
+        if tournamentname not in tournamentlist:
+            tournamentlist[tournamentname] = {}
+        if game not in tournamentlist[tournamentname]:
+            tournamentlist[tournamentname][game] = {}
 
         for name in urlnames:
             if name not in masternames:
@@ -151,6 +159,9 @@ for URL in URLLIST:
             if game not in masternames[name]:
                 masternames[name][game] = 0,0,0,0,0
             masternames[name][game] = masternames[name][game][0] + urlnames[name][game][0],masternames[name][game][1]+urlnames[name][game][1],masternames[name][game][2]+urlnames[name][game][2],masternames[name][game][3]+urlnames[name][game][3],masternames[name][game][4]+urlnames[name][game][4]
+            if name not in tournamentlist[tournamentname][game]:
+                tournamentlist[tournamentname][game][name] = 0,0,0,0,0
+            tournamentlist[tournamentname][game][name] = tournamentlist[tournamentname][game][name][0] + urlnames[name][game][0],tournamentlist[tournamentname][game][name][1]+urlnames[name][game][1],tournamentlist[tournamentname][game][name][2]+urlnames[name][game][2],tournamentlist[tournamentname][game][name][3]+urlnames[name][game][3],tournamentlist[tournamentname][game][name][4]+urlnames[name][game][4]
 
         for player in urlplayers:
             if player not in masterplayers:
@@ -183,5 +194,5 @@ for URL in URLLIST:
 
 
 print("goodbye")
-exportToxlsx(masternames, masterplayers)
+exportToxlsx(masternames, masterplayers,tournamentlist)
 quit()
