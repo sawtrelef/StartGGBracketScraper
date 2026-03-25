@@ -99,24 +99,34 @@ def exportToxlsx(namesdictionary, playersdictionary, tournamentdictionary, filet
     for tournament in tournamentdictionary:
         if tournament not in tournamentsheets:
             tournamentsheets[tournament] = workbook.add_worksheet(str("Tournament " + str(tournamentcount)))
+            tournamentsheets[tournament].write(0,0,tournament)
             tournamentcount = tournamentcount +1
             tournamentnamelist[tournament] = []
         column = 0
         for game in tournamentdictionary[tournament]:
-            tournamentsheets[tournament].write(0,column, str(game))
-            tournamentsheets[tournament].write(0,column+1, "Record")
-            row = 1
+            tournamentsheets[tournament].write(1,column, str(game))
+            tournamentsheets[tournament].write(1,column+1, "Sets Played")
+            tournamentsheets[tournament].write(1, column + 2, "Sets Won")
+            tournamentsheets[tournament].write(1, column + 3, "Games Played")
+            tournamentsheets[tournament].write(1, column + 4, "Games Won")
+            tournamentsheets[tournament].write(1, column + 5, "Times DQ'd")
+            row = 2
             for name in tournamentdictionary[tournament][game]:
                 tournamentsheets[tournament].write(row,column, name)
-                tournamentsheets[tournament].write(row,column+1, str(tournamentdictionary[tournament][game][name]))
+                tournamentsheets[tournament].write(row,column+1, str(tournamentdictionary[tournament][game][name][0]))
+                tournamentsheets[tournament].write(row, column + 2, str(tournamentdictionary[tournament][game][name][1]))
+                tournamentsheets[tournament].write(row, column + 3, str(tournamentdictionary[tournament][game][name][2]))
+                tournamentsheets[tournament].write(row, column + 4, str(tournamentdictionary[tournament][game][name][3]))
+                tournamentsheets[tournament].write(row, column + 5, str(tournamentdictionary[tournament][game][name][4]))
+
                 row = row+1
                 if name not in tournamentnamelist[tournament]:
                     tournamentnamelist[tournament].append(name)
 
-            column = column+2
+            column = column+6
 
-        tournamentsheets[tournament].write(0,column, "Attendees List")
-        row = 1
+        tournamentsheets[tournament].write(1,column, "Attendees List")
+        row = 2
         for name in tournamentnamelist[tournament]:
             tournamentsheets[tournament].write(row,column, name)
             row = row+1
@@ -131,34 +141,55 @@ def exportToxlsx(namesdictionary, playersdictionary, tournamentdictionary, filet
         if cleanname not in playersheets:
             playersheets[cleanname] = workbook.add_worksheet(cleanname)
             playersheets[cleanname].write(0,0, str(player))
+
             activesheet = playersheets[cleanname]
         else:
             activesheet = findsheet(workbook,playersheets, cleanname, player)
 
-
-
-
-
         column = 0
-
         for game in playersdictionary[player].opponents:
             activesheet.write(1,column,game)
-            activesheet.write(1,column+1,"record")
+            activesheet.write(1,column+1,"Sets Played")
+            activesheet.write(1,column+2,"Sets Won")
+            activesheet.write(1,column+3,"Sets Lost")
+            activesheet.write(1,column+4,"Games Played")
+            activesheet.write(1,column+5,"Games Won")
+            activesheet.write(1, column + 6, "Games Lost")
+            activesheet.write(1, column + 7, "DQ'd")
+
             row = 2
             for opponent in playersdictionary[player].opponents[game]:
                 if opponent not in opponentdict:
                     opponentdict[opponent] = 0,0,0,0,0,0,0
                 opponentdict[opponent] = playersdictionary[player].opponents[game][opponent][0] + opponentdict[opponent][0],playersdictionary[player].opponents[game][opponent][1] + opponentdict[opponent][1],playersdictionary[player].opponents[game][opponent][2] + opponentdict[opponent][2],playersdictionary[player].opponents[game][opponent][3] + opponentdict[opponent][3],playersdictionary[player].opponents[game][opponent][4] + opponentdict[opponent][4],playersdictionary[player].opponents[game][opponent][5] + opponentdict[opponent][5],playersdictionary[player].opponents[game][opponent][6] + opponentdict[opponent][6]
                 activesheet.write(row,column,opponent)
-                activesheet.write(row,column+1,str(playersdictionary[player].opponents[game][opponent]))
+                activesheet.write(row,column+1,str(playersdictionary[player].opponents[game][opponent][0]))
+                activesheet.write(row, column + 2, str(playersdictionary[player].opponents[game][opponent][1]))
+                activesheet.write(row, column + 3, str(playersdictionary[player].opponents[game][opponent][2]))
+                activesheet.write(row, column + 4, str(playersdictionary[player].opponents[game][opponent][3]))
+                activesheet.write(row, column + 5, str(playersdictionary[player].opponents[game][opponent][4]))
+                activesheet.write(row, column + 6, str(playersdictionary[player].opponents[game][opponent][5]))
+                activesheet.write(row, column + 7, str(playersdictionary[player].opponents[game][opponent][6]))
                 row = row+1
-            column = column+2
+            column = column+8
         activesheet.write(1,column, "Opponent")
-        activesheet.write(1,column+1, "Overall Record")
+        activesheet.write(1, column + 1, "Total Sets Played")
+        activesheet.write(1, column + 2, "Total Sets won")
+        activesheet.write(1, column + 3, "Total Sets Lost")
+        activesheet.write(1, column + 4, "Total Games Played")
+        activesheet.write(1, column + 5, "Total Games Won")
+        activesheet.write(1, column + 6, "Total Games Lost")
+        activesheet.write(1, column + 7, "Total Times DQ'd")
         row = 2
         for opponent in opponentdict:
             activesheet.write(row, column, opponent)
-            activesheet.write(row, column + 1, str(opponentdict[opponent]))
+            activesheet.write(row, column + 1, str(opponentdict[opponent][0]))
+            activesheet.write(row, column + 2, str(opponentdict[opponent][1]))
+            activesheet.write(row, column + 3, str(opponentdict[opponent][2]))
+            activesheet.write(row, column + 4, str(opponentdict[opponent][3]))
+            activesheet.write(row, column + 5, str(opponentdict[opponent][4]))
+            activesheet.write(row, column + 6, str(opponentdict[opponent][5]))
+            activesheet.write(row, column + 7, str(opponentdict[opponent][6]))
             row = row+1
 
 
