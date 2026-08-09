@@ -1,11 +1,10 @@
 import requests
+import sys
 from xlsxExporter import exportToxlsx
 from bs4 import BeautifulSoup
+from BracketLinkPuller import fetchBracketURLS
 
-URL1 = "https://www.start.gg/tournament/arcade-time-knockout-smash-brothers-tournament-with-hungrybox-2/event/melee-singles/brackets/2177508/3167981"
-URL2 = "https://www.start.gg/tournament/arcade-time-knockout-smash-brothers-tournament-with-hungrybox-2/event/ultimate-singles/brackets/2175874/3165749"
-
-urlfile = open('urllist.txt')
+urlfile = open('ATKO1-9.txt')
 
 urltext = urlfile.read()
 URLLIST = urltext.splitlines()
@@ -33,9 +32,6 @@ class Player():
         elif gameslost > gameswon:
             self.opponents[game][name] = (self.opponents[game][name][0]+1, self.opponents[game][name][1], self.opponents[game][name][2]+1, self.opponents[game][name][3]+gamesplayed, self.opponents[game][name][4]+gameswon, self.opponents[game][name][5]+gameslost, self.opponents[game][name][6])
 
-
-
-
 def gatherData(URL):
     URLSPLITS = URL.split('/')
     gamesplit = URLSPLITS.index("brackets")
@@ -50,11 +46,14 @@ def gatherData(URL):
     players = {}
 
     for match in matches:
-        if losername == "CCgrabs":
-            print("beep")
-
         winnerdata = match.find("div", class_="match-player entrant winner")
         loserdata = match.find("div", class_="match-player entrant loser")
+
+        if winnerdata == None and loserdata == None:
+            winnerdata = match.find("div", class_="match-section match-section-top")
+            winnerdata = winnerdata.find("div", class_="match-player entrant loser missing dq")
+            loserdata = match.find("div", class_="match-section match-section-bottom")
+            loserdata = loserdata.find("div", class_="match-player entrant loser missing dq")
 
         if winnerdata == None:
             winnerdata = match.find("div", class_="match-player entrant winner missing")
@@ -70,18 +69,29 @@ def gatherData(URL):
 
         if loserdata:
             losername = loserdata.find("span", class_="match-player-name-container")
+            if losername == None:
+                losername = loserdata.find("div", class_="match-player-name")
+                losername = losername.find("span")
             losername = str(losername.contents[len(losername.contents) - 1])
             losergames = loserdata.contents[1].text
 
         if winnerdata:
             winnername = winnerdata.find("span", class_="match-player-name-container")
+            if winnername == None:
+                winnername = winnerdata.find("div", class_="match-player-name")
+                winnername = winnername.find("span")
             winnername = str(winnername.contents[len(winnername.contents) - 1])
             winnergames = winnerdata.contents[1].text
-            if winnergames == '':
+            if winnergames == '' or winnergames == 'DQ':
                 winnergames = 0
             winnergames = int(winnergames)
 
+        if loserdata == None and winnerdata == None:
+            continue
+
         if losergames == "DQ":
+            losergames = 0
+        if losergames == '':
             losergames = 0
         losergames = int(losergames)
 
@@ -119,30 +129,41 @@ def gatherData(URL):
 
     return names, players
 
-def fetchURLS(URL):
-    listofURL = []
-
-    page = requests.get(URL)
-    soup = BeautifulSoup(page.content, "html.parser")
-
-    return listofURL
-
-
 masternames = {}
 masterplayers = {}
 tournamentlist= {}
 
 
 current = 1
-max = len(URLLIST)
+
+
+BRACKETURLLIST = []
 
 for URL in URLLIST:
+    URLSPLITS = URL.split('/')
+    gamesplit = URLSPLITS.index('tournament')
+    tournamentname = URLSPLITS[gamesplit+1]
+    if 'brackets' in URLSPLITS:
+        if URLSPLITS[len(URLSPLITS)-1] != 'brackets':
+            BRACKETURLLIST.append(URL)
+            continue
+    listofbrackets = fetchBracketURLS(URL)
+    for bracket in listofbrackets:
+        BRACKETURLLIST.append(bracket)
+
+
+max = len(BRACKETURLLIST)
+for URL in BRACKETURLLIST:
 
     print ("Processing "+str(current)+" out of "+ str(max))
     URLSPLITS = URL.split('/')
     gamesplit = URLSPLITS.index("brackets")
     game = URLSPLITS[gamesplit-1]
-    tournamentname = URLSPLITS[URLSPLITS.index("event")-1]
+    if "event" in URLSPLITS:
+        index = URLSPLITS.index("event")-1
+    elif "events" in URLSPLITS:
+       index = URLSPLITS.index("events") - 1
+    tournamentname = URLSPLITS[index]
 
 
 
@@ -181,8 +202,6 @@ for URL in URLLIST:
                                                         masterplayers[player].opponents[game][opponent][4] + urlplayers[player].opponents[game][opponent][4], \
                                                         masterplayers[player].opponents[game][opponent][5] + urlplayers[player].opponents[game][opponent][5], \
                                                         masterplayers[player].opponents[game][opponent][6] + urlplayers[player].opponents[game][opponent][6]
-    else:
-        urllist = fetchURLS(URL)
     current = current+1
 
     #for player in players:
@@ -198,4 +217,34 @@ for URL in URLLIST:
 
 print("goodbye")
 exportToxlsx(masternames, masterplayers,tournamentlist)
-quit()
+print('Start')
+
+del BRACKETURLLIST
+del URLLIST
+del URLSPLITS
+del bracket
+del current
+del game
+del gamesplit
+del index
+del listofbrackets
+del masternames
+del masterplayers
+del max
+del name
+del opponent
+del player
+del tournamentlist
+del tournamentname
+del urlfile
+del urlnames
+del urlplayers
+del urltext
+del URL
+
+try:
+    sys.exit()
+except:
+    print('Catch all exceptions')
+
+print('Finish')

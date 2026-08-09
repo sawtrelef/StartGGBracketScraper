@@ -1,0 +1,74 @@
+import sys
+import pygame
+from pygame import draw
+
+def cleanup():
+    del display
+    del clock
+    del done
+    del eventlist
+    del width
+    del height
+
+def clickcheck(position, item):
+    x = position[0]
+    y = position[1]
+    rect = item.rect
+    if x >= rect.x and x <= rect.x + rect.width and y >= rect.y and y <= rect.y+rect.height:
+        return True
+    return False
+
+
+pygame.init()
+
+width = 800
+height = 700
+
+backgroundrect =  pygame.rect.Rect(0,0,width,height)
+
+pygame.display.set_caption('Image Rotation Testing')
+display = pygame.display.set_mode((width,height),pygame.RESIZABLE)
+clock = pygame.time.Clock()
+
+clickableobjectlist = []
+
+done = False
+
+while not done:
+
+    eventlist = pygame.event.get()
+    for event in eventlist:
+        if event.type == pygame.QUIT:
+            done = True
+        if event.type == pygame.VIDEORESIZE:
+            width, height = event.dict['size']
+            backgroundrect.width = width
+            backgroundrect.height = height
+            display = pygame.display.set_mode((width,height),pygame.RESIZABLE)
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            position = pygame.mouse.get_pos()
+            clicked = False
+            for clickable in clickableobjectlist:
+                if clickcheck(position, clickable):
+                    clicked = clickable
+            #if clicked != STUFF:
+            break
+
+    if done:
+        break
+
+    draw.rect(display,(68,240,68),backgroundrect)
+
+    pygame.display.update()
+
+pygame.quit()
+cleanup()
+try:
+    sys.exit()
+except:
+     print('Catch all exceptions')
+
+    for item in locals():
+        del item
+    gc.collect()
+    sys.exit()
