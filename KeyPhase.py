@@ -91,10 +91,12 @@ def getkeyloop(pygame):
     keybox.rect.x = PasteButton.rect.width + 20
     keybox.rect.y = 50
     keybox.updatetext('    ')
-
+    file = False
+    key = ''
     if 'key' in filelist:
         file = open('key')
         lines = file.readlines()
+        file.close()
         if lines != '':
             key = lines
             done = True
@@ -105,17 +107,13 @@ def getkeyloop(pygame):
     clickableobjectlist.append(DoneButton)
 
     done = False
-    if 'key' in filelist:
-        file = open('key')
-        lines = file.readlines()
-        if lines != '':
-            key = lines[0]
-            done = True
+
     while not done:
         eventlist = pygame.event.get()
         for event in eventlist:
             if event.type == pygame.QUIT:
                 done = True
+                sys.exit()
             if event.type == pygame.VIDEORESIZE:
                 width, height = event.dict['size']
                 backgroundrect.width = width
@@ -170,7 +168,6 @@ def getkeyloop(pygame):
     del clickableobjectlist
     del clock
     del doneimage
-    file.close()
     del file
     del height
     del infotext

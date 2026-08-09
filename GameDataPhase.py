@@ -212,6 +212,7 @@ def GameDataPhase(pygame, masternames, masterplayers,tournamentlist, mostrecentl
         for event in eventlist:
             if event.type == pygame.QUIT:
                 done = True
+                sys.exit()
             if event.type == pygame.VIDEORESIZE:
                 newWidth, newHeight = event.dict['size']
                 backgroundrect.width = newWidth

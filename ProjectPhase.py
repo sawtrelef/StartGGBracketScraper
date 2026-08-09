@@ -64,6 +64,7 @@ def ProjectPhase(pygame):
     clickableobjectlist.append(LoadButton)
     clickableobjectlist.append(projectnamebox)
     clickableobjectlist.append(CreateProjectButton)
+    ID = False
     for ID in ProjectList.buttondict:
         clickableobjectlist.append(ProjectList.buttondict[ID])
     drawlist.append(NewButton)
@@ -76,6 +77,9 @@ def ProjectPhase(pygame):
     done = False
     ActiveCell = False
     projectpath = ""
+    clicked = False
+    position = False
+    clickable = False
     while not done:
 
         eventlist = pygame.event.get()
@@ -83,6 +87,7 @@ def ProjectPhase(pygame):
         for event in eventlist:
             if event.type == pygame.QUIT:
                 done = True
+                sys.exit()
             if event.type == pygame.VIDEORESIZE:
                 width, height = event.dict['size']
                 backgroundrect.width = width

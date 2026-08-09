@@ -91,7 +91,8 @@ def URLPhaseLoop(pygame,projectpath=False):
     done = False
     activecell = False
     urllist = []
-
+    button = False
+    file = False
     if projectpath != False:
         filelist = os.listdir(projectpath)
         if 'urllist.txt' in filelist:
@@ -108,6 +109,7 @@ def URLPhaseLoop(pygame,projectpath=False):
         for event in eventlist:
             if event.type == pygame.QUIT:
                 done = True
+                sys.exit()
             if event.type == pygame.MOUSEBUTTONDOWN:
                 clicked = False
                 position = pygame.mouse.get_pos()
@@ -234,7 +236,7 @@ def URLPhaseLoop(pygame,projectpath=False):
     del enterbuttonimage
     del event
     del eventlist
-    file.close()
+    #file.close()
     del file
     del filelist
     del height

@@ -9,7 +9,6 @@ from pysmashgg import SmashGG
 import pygame,sys, gc
 from URLProcessing import processURLs
 from os import listdir, remove, path, mkdir
-
 from xlsxExporter import exportToxlsx
 
 
